@@ -1,0 +1,488 @@
+# =============================================================================
+#  spots.yaml — EL ACTIVO DEL PROYECTO
+# =============================================================================
+#
+#  Este fichero es la capa de interpretación local. Los datos meteorológicos
+#  son commodity; esto no. Cada campo que rellenes aquí es valor que ninguna
+#  API tiene.
+#
+#  CÓMO AÑADIR UN SPOT: copia un bloque, cambia los valores. No se toca código.
+#
+#  CONVENCIÓN DE CALIDAD DEL DATO — cada campo local lleva un origen:
+#    verificado   → dato público comprobable (coordenadas, estación de marea,
+#                   figura de protección legal, etc.)
+#    geometria    → deducido de la orientación de la costa en el mapa. Es una
+#                   primera aproximación razonable, NO conocimiento local.
+#    PENDIENTE_ROBE → requiere conocimiento local. La app lo detecta, lo dice
+#                   en la interfaz y NO se inventa un valor. Mientras esté así,
+#                   el veredicto de ese spot queda limitado a "Justo" como
+#                   máximo, con el motivo visible.
+#
+#  Direcciones: grados meteorológicos (0 = viento DEL norte, 90 = del este).
+#  Alturas de marea: metros sobre el cero del puerto (datum IHM), igual que
+#  devuelve la API del Instituto Hidrográfico de la Marina.
+#
+# =============================================================================
+
+version: 1
+
+# Valores por defecto. Cada spot puede sobrescribir cualquiera de ellos.
+defaults:
+  viento:
+    minimo_nudos: 12         # por debajo, no hay planeo con ala razonable
+    maximo_nudos: 33         # por encima, fuera de rango para material normal
+    justo_bajo_nudos: 14     # entre minimo y esto → "Justo"
+    justo_alto_nudos: 28     # entre esto y maximo → "Justo"
+    racha_ratio_malo: 1.6    # racha/media por encima de esto → viento sucio
+    racha_ratio_justo: 1.4
+  mar:
+    ola_max_m: 1.5
+    ola_justo_m: 1.0
+  marea:
+    ventana:
+      tipo: siempre
+
+spots:
+
+  # ---------------------------------------------------------------------------
+  - id: chipiona
+    nombre: Chipiona
+    zona: Costa Noroeste de Cádiz
+    orden: 1
+
+    coordenadas:
+      lat: 36.7369
+      lon: -6.4386
+      origen: verificado
+      nota: >-
+        Punto de referencia frente a la playa de Regla / Las Canteras.
+        Ajustar si prefieres tomar como referencia otra playa del pueblo.
+
+    marea:
+      estacion_ihm:
+        id: 39
+        nombre: Chipiona
+        origen: verificado
+        nota: >-
+          Chipiona tiene estación de predicción propia en el IHM. La marea no
+          se interpola desde otro puerto: es la del sitio.
+      ventana:
+        tipo: PENDIENTE_ROBE
+        # Rellena UNA de estas dos formas y borra la otra:
+        #
+        #   tipo: altura_minima
+        #   altura_min_m: 1.8          # no se navega por debajo de esta altura
+        #
+        #   tipo: horas_alrededor
+        #   referencia: pleamar        # pleamar | bajamar
+        #   horas_antes: 3
+        #   horas_despues: 3
+        #
+        nota_para_robe: >-
+          Éste es EL campo del proyecto. ¿A partir de qué altura de marea
+          cubre lo suficiente para no comerte los corrales / la piedra?
+          ¿Y hay un techo por arriba (demasiada agua, rompe mal, no hay
+          playa para montar)? Es lo que decide el 80% de tus mañanas.
+
+    viento:
+      orientacion_costa_grados: 250
+      origen_orientacion: geometria
+      nota_orientacion: >-
+        La costa de Chipiona mira aproximadamente al OSO. Viento del
+        250 sería onshore puro.
+      direcciones:
+        buenas: [[180, 300]]
+        regulares: [[150, 180], [300, 330]]
+        malas: [[330, 360], [0, 150]]
+        origen: geometria
+        nota_para_robe: >-
+          Esto está deducido del mapa, no de tu experiencia. Corrígelo.
+          En concreto: ¿el Poniente entra limpio o racheado por el pueblo?
+          ¿Con Levante (unos 90-110) se navega en algún sitio de Chipiona
+          o es directamente offshore peligroso?
+      malas_notas:
+        - rango: [0, 150]
+          motivo: >-
+            Componente N-E: offshore. Te aleja de la costa. Riesgo alto si
+            se rompe material.
+          origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+      nota_para_robe: >-
+        ¿A partir de qué altura de ola (la que da el modelo, no la que ves)
+        deja de ser divertido o deja de ser seguro para salir/entrar?
+
+    nivel_recomendado: PENDIENTE_ROBE   # iniciacion | intermedio | avanzado
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+      nota_para_robe: >-
+        Dónde aparcas de verdad, por dónde entras con la tabla hinchada,
+        si hay rampa, si en verano hay que llegar antes de las 10.
+
+    seguridad:
+      - aviso: >-
+          Corrales de pesca de Chipiona. Estructuras de piedra en la zona
+          intermareal, declaradas Monumento Natural de Andalucía. Emergen
+          con marea baja y son sólidas.
+        origen: verificado
+        severidad: alta
+      - aviso: PENDIENTE_ROBE
+        nota_para_robe: >-
+          Añade lo que sepas: zona de baño balizada en verano, tráfico de
+          barcos del puerto, corriente cerca de la desembocadura del
+          Guadalquivir, bajos concretos con nombre.
+
+  # ---------------------------------------------------------------------------
+  - id: sanlucar
+    nombre: Sanlúcar de Barrameda
+    zona: Desembocadura del Guadalquivir
+    orden: 2
+
+    coordenadas:
+      lat: 36.7897
+      lon: -6.3560
+      origen: verificado
+      nota: Referencia frente a Bajo de Guía / La Calzada.
+
+    marea:
+      estacion_ihm:
+        id: 37
+        nombre: Bonanza (Sanlúcar de Barrameda)
+        origen: verificado
+      ventana:
+        tipo: PENDIENTE_ROBE
+        nota_para_robe: >-
+          Aquí la marea manda dos veces: por el agua y por la corriente del
+          río. ¿Se navega mejor con la entrante o con la vaciante?
+
+    viento:
+      orientacion_costa_grados: 225
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[160, 280]]
+        regulares: [[130, 160], [280, 310]]
+        malas: [[310, 360], [0, 130]]
+        origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Desembocadura del Guadalquivir: corriente de marea fuerte y
+          canal de navegación con tráfico comercial hacia Sevilla.
+        origen: verificado
+        severidad: alta
+      - aviso: >-
+          Margen derecha (Doñana) es Parque Nacional con acceso restringido.
+        origen: verificado
+        severidad: media
+
+  # ---------------------------------------------------------------------------
+  - id: rota
+    nombre: Rota
+    zona: Bahía de Cádiz (exterior)
+    orden: 3
+
+    coordenadas:
+      lat: 36.6231
+      lon: -6.3639
+      origen: verificado
+      nota: Referencia frente a playa de la Costilla / Punta Candor.
+
+    marea:
+      estacion_ihm:
+        id: 40
+        nombre: Rota
+        origen: verificado
+      ventana:
+        tipo: PENDIENTE_ROBE
+
+    viento:
+      orientacion_costa_grados: 215
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[150, 270]]
+        regulares: [[120, 150], [270, 300]]
+        malas: [[300, 360], [0, 120]]
+        origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Corrales de Rota (Punta Candor): estructuras de piedra
+          intermareales protegidas como Monumento Natural de Andalucía.
+        origen: verificado
+        severidad: alta
+      - aviso: >-
+          Base Naval de Rota: zona militar con restricciones marítimas en
+          su entorno. Comprueba los límites antes de navegar hacia el sur.
+        origen: verificado
+        severidad: alta
+
+  # ---------------------------------------------------------------------------
+  - id: valdelagrana
+    nombre: Valdelagrana (El Puerto)
+    zona: Bahía de Cádiz
+    orden: 4
+
+    coordenadas:
+      lat: 36.5836
+      lon: -6.2131
+      origen: verificado
+
+    marea:
+      estacion_ihm:
+        id: 41
+        nombre: El Puerto de Santa María
+        origen: verificado
+      ventana:
+        tipo: PENDIENTE_ROBE
+        nota_para_robe: >-
+          Playa muy tendida: con marea baja el agua se retira mucho.
+          ¿Cuánta marea necesitas para no tener que andar 300 m?
+
+    viento:
+      orientacion_costa_grados: 215
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[150, 270]]
+        regulares: [[120, 150], [270, 310]]
+        malas: [[310, 360], [0, 120]]
+        origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Marismas de Valdelagrana: espacio protegido dentro del Parque
+          Natural Bahía de Cádiz.
+        origen: verificado
+        severidad: media
+      - aviso: >-
+          Cercanía al canal de entrada del puerto de El Puerto de Santa
+          María y a la bocana del Guadalete: tráfico de embarcaciones.
+        origen: verificado
+        severidad: media
+
+  # ---------------------------------------------------------------------------
+  - id: puerto-real
+    nombre: Puerto Real (Río San Pedro)
+    zona: Bahía interior
+    orden: 5
+
+    coordenadas:
+      lat: 36.5322
+      lon: -6.2131
+      origen: verificado
+      nota: Referencia zona Río San Pedro / La Cachucha.
+
+    marea:
+      estacion_ihm:
+        id: 43
+        nombre: La Carraca
+        origen: verificado
+        nota: >-
+          Puerto Real no tiene estación propia en el IHM. Se usa La Carraca,
+          la más cercana dentro de la bahía interior. La bahía interior tiene
+          desfase de marea respecto a la bocana; si notas que no cuadra,
+          díselo y lo ajustamos con un desfase fijo.
+      ventana:
+        tipo: PENDIENTE_ROBE
+        nota_para_robe: >-
+          Bahía interior muy somera. Con bajamar viva probablemente sea
+          fango. ¿Es navegable sólo en pleamar?
+
+    viento:
+      orientacion_costa_grados: 250
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[180, 300]]
+        regulares: [[150, 180], [300, 340]]
+        malas: [[340, 360], [0, 150]]
+        origen: geometria
+        nota_para_robe: >-
+          Bahía interior rodeada de tierra: aquí la dirección importa menos
+          por el oleaje y más por si el viento entra limpio o racheado.
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Parque Natural Bahía de Cádiz: fondos fangosos, esteros y caños.
+        origen: verificado
+        severidad: media
+      - aviso: PENDIENTE_ROBE
+
+  # ---------------------------------------------------------------------------
+  - id: cadiz
+    nombre: Cádiz (La Victoria / Cortadura)
+    zona: Cádiz capital
+    orden: 6
+
+    coordenadas:
+      lat: 36.4900
+      lon: -6.2703
+      origen: verificado
+      nota: Referencia frente a playa de Cortadura.
+
+    marea:
+      estacion_ihm:
+        id: 42
+        nombre: Cádiz
+        origen: verificado
+      ventana:
+        tipo: PENDIENTE_ROBE
+
+    viento:
+      orientacion_costa_grados: 235
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[170, 290]]
+        regulares: [[140, 170], [290, 320]]
+        malas: [[320, 360], [0, 140]]
+        origen: geometria
+        nota_para_robe: >-
+          Aquí el Levante es offshore y, según cuentan, entra muy racheado
+          por la ciudad en La Victoria y más limpio en Cortadura.
+          Confírmalo o córrígelo tú.
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Playa urbana con zona de baño balizada en temporada de verano.
+        origen: verificado
+        severidad: media
+      - aviso: PENDIENTE_ROBE
+
+  # ---------------------------------------------------------------------------
+  - id: camposoto
+    nombre: San Fernando (Camposoto)
+    zona: Bahía de Cádiz (exterior sur)
+    orden: 7
+
+    coordenadas:
+      lat: 36.4406
+      lon: -6.2411
+      origen: verificado
+
+    marea:
+      estacion_ihm:
+        id: 44
+        nombre: Gallineras
+        origen: verificado
+        nota: >-
+          Gallineras es la estación IHM de San Fernando. Está en el caño,
+          no en la playa abierta; puede haber un pequeño desfase.
+      ventana:
+        tipo: PENDIENTE_ROBE
+
+    viento:
+      orientacion_costa_grados: 235
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[170, 290]]
+        regulares: [[140, 170], [290, 320]]
+        malas: [[320, 360], [0, 140]]
+        origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Playa dentro del Parque Natural Bahía de Cádiz, con accesos
+          regulados y aparcamiento limitado en verano.
+        origen: verificado
+        severidad: media
+      - aviso: PENDIENTE_ROBE
+
+  # ---------------------------------------------------------------------------
+  - id: sancti-petri
+    nombre: Sancti Petri
+    zona: Chiclana
+    orden: 8
+
+    coordenadas:
+      lat: 36.3894
+      lon: -6.2178
+      origen: verificado
+
+    marea:
+      estacion_ihm:
+        id: 45
+        nombre: Sancti Petri
+        origen: verificado
+      ventana:
+        tipo: PENDIENTE_ROBE
+
+    viento:
+      orientacion_costa_grados: 235
+      origen_orientacion: geometria
+      direcciones:
+        buenas: [[170, 290]]
+        regulares: [[140, 170], [290, 320]]
+        malas: [[320, 360], [0, 140]]
+        origen: geometria
+
+    mar:
+      ola_max_m: PENDIENTE_ROBE
+
+    nivel_recomendado: PENDIENTE_ROBE
+
+    logistica:
+      aparcamiento: PENDIENTE_ROBE
+      acceso_al_agua: PENDIENTE_ROBE
+
+    seguridad:
+      - aviso: >-
+          Caño de Sancti Petri: corriente de marea fuerte en el canal y
+          tráfico de embarcaciones de recreo.
+        origen: verificado
+        severidad: alta
+      - aviso: PENDIENTE_ROBE
