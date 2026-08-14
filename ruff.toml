@@ -1,0 +1,6 @@
+# Reglas relajadas a propósito:
+#  E402  los scripts ajustan sys.path antes de importar lib/
+#  DTZ   se usa hora local de Europe/Madrid deliberadamente, no UTC
+#  EXE   los scripts se invocan con `python scripts/...`, no como ejecutables
+lint.ignore = ["E402", "DTZ001", "DTZ007", "DTZ011", "EXE001", "EXE002"]
+line-length = 100
