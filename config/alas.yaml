@@ -1,0 +1,75 @@
+# =============================================================================
+#  alas.yaml — traducción viento × peso → tamaño de ala
+# =============================================================================
+#
+#  Tabla semilla proporcionada por Robe, a calibrar con experiencia real.
+#  NADA de esto está en el código: si la tabla cambia, se cambia aquí.
+#
+# =============================================================================
+
+version: 1
+
+# Peso para el que está escrita la tabla de abajo.
+peso_referencia_kg: 75
+
+material_referencia: "Tabla hinchable GONG Cruzader HIPE"
+
+# --- SUPOSICIÓN A CALIBRAR ---------------------------------------------------
+#  Regla de escalado por peso: ±10 kg ≈ ±0,5 m² de ala.
+#  Un rider más pesado necesita MÁS ala para el mismo viento.
+#  Esto es una aproximación lineal de partida, no una ley física: en los
+#  extremos (riders muy ligeros o muy pesados) se desvía. Calibrar con uso.
+# -----------------------------------------------------------------------------
+escalado_peso:
+  kg_por_paso: 10
+  metros_por_paso: 0.5
+  # Límites de sensatez: no extrapolar más allá de esto.
+  peso_min_kg: 45
+  peso_max_kg: 120
+  ala_min_m: 2.5
+  ala_max_m: 8.5
+
+# Tramos por viento medio en nudos. `hasta` es exclusivo.
+# `ala_min`/`ala_max` en m², para el peso de referencia.
+tramos:
+  - desde: 0
+    hasta: 12
+    navegable: false
+    etiqueta: "Sin viento suficiente"
+
+  - desde: 12
+    hasta: 15
+    navegable: true
+    ala_min: 6.5
+    ala_max: 7.0
+
+  - desde: 15
+    hasta: 18
+    navegable: true
+    ala_min: 5.5
+    ala_max: 6.0
+
+  - desde: 18
+    hasta: 22
+    navegable: true
+    ala_min: 5.0
+    ala_max: 5.0
+
+  - desde: 22
+    hasta: 26
+    navegable: true
+    ala_min: 4.5
+    ala_max: 4.5
+
+  - desde: 26
+    hasta: 30
+    navegable: true
+    ala_min: 4.0
+    ala_max: 4.0
+
+  - desde: 30
+    hasta: 999
+    navegable: true
+    ala_min: 3.5
+    ala_max: 3.5
+    etiqueta: "3.5 m o menos"
