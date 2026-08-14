@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Hoy se navega? · Wing foil en Cádiz</title>
+<meta name="description" content="Si hoy se navega en wing foil en la costa de Cádiz, a qué hora y con qué ala. Viento, marea y mar cruzados spot a spot.">
+<meta name="theme-color" content="#0d1b21">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🪁</text></svg>">
+<style>
+:root{
+  --tinta:#0d1b21;
+  --tinta-2:#3c5058;
+  --tinta-3:#6b8089;
+  --fondo:#f4f1ea;
+  --papel:#ffffff;
+  --linea:#ddd7cb;
+  --si:#0a7d3e;
+  --si-bg:#e2f3e7;
+  --justo:#a86a00;
+  --justo-bg:#fbeed6;
+  --no:#a32218;
+  --no-bg:#f8e4e1;
+  --radio:14px;
+  --sombra:0 1px 2px rgba(13,27,33,.06), 0 8px 24px -12px rgba(13,27,33,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --tinta:#eef2f1; --tinta-2:#a8bcc3; --tinta-3:#7e949c;
+    --fondo:#0b1519; --papel:#131f24; --linea:#25353c;
+    --si:#5ddc90; --si-bg:#102a1c;
+    --justo:#f5b545; --justo-bg:#2e2311;
+    --no:#ff8577; --no-bg:#2e1512;
+    --sombra:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--fondo); color:var(--tinta);
+  font:400 16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-feature-settings:"tnum" 1;
+  padding:0 14px calc(28px + env(safe-area-inset-bottom));
+  max-width:560px; margin-inline:auto;
+}
+
+/* ---------- cabecera ---------- */
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 2px 10px}
+.marca{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-2)}
+.marca b{color:var(--tinta)}
+.reloj{font-size:11px;color:var(--tinta-3);text-align:right;line-height:1.3}
+.reloj.viejo{color:var(--no);font-weight:600}
+
+.controles{display:flex;gap:8px;margin-bottom:12px}
+.campo{position:relative;flex:1 1 auto;min-width:0}
+.campo.peso{flex:0 0 104px}
+.campo label{
+  position:absolute;top:6px;left:12px;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tinta-3);pointer-events:none;font-weight:700
+}
+select,input{
+  width:100%;appearance:none;border:1px solid var(--linea);background:var(--papel);
+  color:var(--tinta);border-radius:11px;padding:22px 12px 8px;font-size:16px;
+  font-weight:600;font-family:inherit
+}
+.campo.spot::after{
+  content:"";position:absolute;right:13px;bottom:16px;width:8px;height:8px;
+  border-right:2px solid var(--tinta-3);border-bottom:2px solid var(--tinta-3);
+  transform:rotate(45deg);pointer-events:none
+}
+select:focus-visible,input:focus-visible{outline:2px solid var(--tinta);outline-offset:1px}
+
+/* ---------- veredicto de hoy ---------- */
+.hoy{
+  background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);
+  box-shadow:var(--sombra);overflow:hidden;margin-bottom:12px
+}
+.hoy .banda{padding:16px 16px 14px;border-left:6px solid var(--linea)}
+.hoy[data-e="si"] .banda{border-left-color:var(--si);background:var(--si-bg)}
+.hoy[data-e="justo"] .banda{border-left-color:var(--justo);background:var(--justo-bg)}
+.hoy[data-e="no"] .banda{border-left-color:var(--no);background:var(--no-bg)}
+.cuando{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-2);font-weight:700}
+.veredicto{
+  font-size:clamp(50px,16vw,70px);line-height:.9;font-weight:800;letter-spacing:-.03em;
+  margin:4px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap
+}
+.chip{
+  font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:4px 9px;border-radius:999px;border:1px solid currentColor;
+  opacity:.75;white-space:nowrap;align-self:center
+}
+.hoy[data-e="si"] .veredicto{color:var(--si)}
+.hoy[data-e="justo"] .veredicto{color:var(--justo)}
+.hoy[data-e="no"] .veredicto{color:var(--no)}
+.porque{font-size:16px;line-height:1.35;font-weight:600;margin:0}
+
+.datos{display:flex;border-top:1px solid var(--linea)}
+.dato{flex:1;padding:11px 14px;border-right:1px solid var(--linea)}
+.dato:last-child{border-right:0}
+.dato .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-3);font-weight:700}
+.dato .v{font-size:17px;font-weight:700;line-height:1.2;margin-top:2px;white-space:nowrap}
+.dato .v.apagado{color:var(--tinta-3);font-weight:600;font-size:16px}
+
+/* ---------- días siguientes ---------- */
+h2{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-2);
+   margin:18px 2px 8px;font-weight:700}
+.lista{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);
+  box-shadow:var(--sombra);overflow:hidden}
+details.dia{border-bottom:1px solid var(--linea)}
+details.dia:last-child{border-bottom:0}
+details.dia summary{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;cursor:pointer;
+  list-style:none;min-height:52px
+}
+details.dia summary::-webkit-details-marker{display:none}
+.pip{flex:0 0 9px;height:34px;border-radius:5px;background:var(--linea)}
+.dia[data-e="si"] .pip{background:var(--si)}
+.dia[data-e="justo"] .pip{background:var(--justo)}
+.dia[data-e="no"] .pip{background:var(--no)}
+.dia .fecha{flex:0 0 62px;font-weight:700;font-size:14px;text-transform:capitalize;line-height:1.2}
+.dia .fecha small{display:block;font-weight:500;color:var(--tinta-3);font-size:11px;text-transform:none}
+.dia .txt{flex:1 1 auto;min-width:0;font-size:13.5px;line-height:1.3;color:var(--tinta-2)}
+.dia .txt em{font-style:normal;color:var(--tinta-3);font-size:12px}
+.dia .txt b{color:var(--tinta)}
+.dia .fin{flex:0 0 auto;text-align:right;font-size:13px;font-weight:700}
+.dia[data-e="si"] .fin{color:var(--si)}
+.dia[data-e="justo"] .fin{color:var(--justo)}
+.dia[data-e="no"] .fin{color:var(--tinta-3);font-weight:600}
+.dia .fin small{display:block;font-weight:500;font-size:10px;color:var(--tinta-3)}
+
+.detalle{padding:0 13px 13px 33px;font-size:13px;color:var(--tinta-2)}
+.detalle ul{margin:0 0 10px;padding-left:16px}
+.detalle li{margin:2px 0}
+.horas{display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.h{flex:0 0 46px;text-align:center;border-radius:8px;padding:5px 2px;background:var(--fondo);
+   border:1px solid var(--linea)}
+.h[data-e="si"]{background:var(--si-bg);border-color:transparent}
+.h[data-e="justo"]{background:var(--justo-bg);border-color:transparent}
+.h[data-e="no"]{opacity:.5}
+.h .hh{font-size:10px;color:var(--tinta-3);font-weight:700}
+.h .vv{font-size:14px;font-weight:800;line-height:1.1}
+.h .rr{font-size:9px;color:var(--tinta-3);font-weight:600}
+
+/* ---------- avisos ---------- */
+.bloque{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);
+  padding:13px 15px;margin-top:12px;box-shadow:var(--sombra)}
+.bloque h3{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-2);
+  margin:0 0 7px;font-weight:700}
+.bloque ul{margin:0;padding-left:17px;font-size:13.5px;line-height:1.45;color:var(--tinta-2)}
+.bloque li{margin:4px 0}
+.bloque li.alta::marker{color:var(--no)}
+.pendiente{border-style:dashed}
+.pendiente h3{color:var(--justo)}
+
+.aviso-legal{
+  margin-top:14px;padding:13px 15px;border:1px solid var(--linea);border-radius:var(--radio);
+  background:transparent;font-size:12.5px;line-height:1.5;color:var(--tinta-2)
+}
+.aviso-legal b{color:var(--tinta)}
+footer{margin-top:16px;font-size:11.5px;line-height:1.6;color:var(--tinta-3);text-align:center}
+footer a{color:var(--tinta-3)}
+.error{background:var(--no-bg);border:1px solid var(--no);color:var(--no);
+  padding:14px;border-radius:var(--radio);font-weight:600}
+.cargando{padding:40px 0;text-align:center;color:var(--tinta-3)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="marca">¿Hoy se <b>navega</b>?</div>
+  <div class="reloj" id="reloj"></div>
+</div>
+
+<div class="controles">
+  <div class="campo spot">
+    <label for="spot">Spot</label>
+    <select id="spot"></select>
+  </div>
+  <div class="campo peso">
+    <label for="peso">Tu peso</label>
+    <input id="peso" type="number" inputmode="numeric" min="40" max="130" step="1">
+  </div>
+</div>
+
+<div id="app"><div class="cargando">Cargando previsión…</div></div>
+
+<div class="aviso-legal">
+  <b>Esto es una ayuda a la decisión, no una garantía.</b> Los modelos fallan, la
+  mar cambia y ningún dato sustituye a mirar el agua. La responsabilidad de entrar
+  o no entrar es tuya y sólo tuya. Comprueba el material, avisa a alguien y no
+  navegues solo si tienes dudas.
+</div>
+
+<footer id="pie"></footer>
+
+<script>
+"use strict";
+
+const $ = s => document.querySelector(s);
+const DIAS_SEM = ["dom","lun","mar","mié","jue","vie","sáb"];
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const ETIQUETA = {si:"Sí", justo:"Justo", no:"No"};
+
+let DATOS = null;
+
+/* --- preferencias persistentes (degradan sin romper si no hay storage) --- */
+const pref = {
+  get(k, def){ try { const v = localStorage.getItem("hsn."+k); return v === null ? def : v; }
+               catch(e){ return def; } },
+  set(k, v){ try { localStorage.setItem("hsn."+k, v); } catch(e){} }
+};
+
+/* --- ala: se recalcula en el navegador con el peso del usuario.
+       La tabla viene en data.json, no está duplicada aquí. --- */
+function alaPara(viento, peso, cfg){
+  const tramo = cfg.tramos.find(t => viento >= t.desde && viento < t.hasta);
+  if(!tramo || tramo.navegable === false) return null;
+  const e = cfg.escalado_peso;
+  const p = Math.min(Math.max(peso, e.peso_min_kg), e.peso_max_kg);
+  const d = ((p - cfg.peso_referencia_kg) / e.kg_por_paso) * e.metros_por_paso;
+  const media = x => Math.min(Math.max(Math.round((x + d) * 2) / 2, e.ala_min_m), e.ala_max_m);
+  return [media(tramo.ala_min), media(tramo.ala_max)];
+}
+
+function textoAla(dia, peso, cfg){
+  if(!dia.viento_franja) return null;
+  const a = alaPara(dia.viento_franja[0], peso, cfg);
+  const b = alaPara(dia.viento_franja[1], peso, cfg);
+  const vals = [a, b].filter(Boolean).flat();
+  if(!vals.length) return null;
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  return lo === hi ? lo.toFixed(1)+" m" : lo.toFixed(1)+"–"+hi.toFixed(1)+" m";
+}
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => (
+  {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function fechaCorta(iso){
+  const d = new Date(iso + "T12:00:00");
+  return { dia: DIAS_SEM[d.getDay()], num: d.getDate() + " " + MESES[d.getMonth()] };
+}
+
+/* ---------------------------------------------------------------- render */
+function render(){
+  if(!DATOS) return;
+  const spot = DATOS.spots.find(s => s.id === $("#spot").value) || DATOS.spots[0];
+  const peso = Math.min(Math.max(parseInt($("#peso").value, 10) || DATOS.peso_base_kg, 40), 130);
+  const cfg = DATOS.alas;
+
+  const hoy = spot.dias[0];
+  const resto = spot.dias.slice(1, 5);
+  const ala = hoy ? textoAla(hoy, peso, cfg) : null;
+
+  let html = "";
+
+  if(hoy){
+    html += `
+    <section class="hoy" data-e="${esc(hoy.estado)}">
+      <div class="banda">
+        <div class="cuando">Hoy en ${esc(spot.nombre)}</div>
+        <div class="veredicto">${ETIQUETA[hoy.estado]}${
+          hoy.sin_calibrar?.length ? `<span class="chip">spot por calibrar</span>` : ""}</div>
+        <p class="porque">${esc(hoy.titular.replace(/^(Sí|Justo|No):s*/, ""))}</p>
+      </div>
+      <div class="datos">
+        <div class="dato">
+          <div class="k">Franja</div>
+          <div class="v ${hoy.franja ? "" : "apagado"}">${hoy.franja ? esc(hoy.franja) : "—"}</div>
+        </div>
+        <div class="dato">
+          <div class="k">Ala · ${peso} kg</div>
+          <div class="v ${ala ? "" : "apagado"}">${ala ? esc(ala) : "—"}</div>
+        </div>
+        <div class="dato">
+          <div class="k">Fiabilidad</div>
+          <div class="v apagado">${esc(hoy.fiabilidad)}</div>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  html += `<h2>Próximos días</h2><div class="lista">`;
+  for(const d of resto){
+    const f = fechaCorta(d.fecha);
+    const a = textoAla(d, peso, cfg);
+    html += `
+    <details class="dia" data-e="${esc(d.estado)}">
+      <summary>
+        <span class="pip"></span>
+        <span class="fecha">${f.dia}<small>${f.num}</small></span>
+        <span class="txt"><b>${ETIQUETA[d.estado]}.</b> ${esc(d.titular.replace(/^(Sí|Justo|No):s*/, ""))}${
+          d.sin_calibrar?.length ? ` <em>· por calibrar</em>` : ""}</span>
+        <span class="fin">${d.franja ? esc(d.franja) : "—"}<small>${a ? esc(a) : "fiab. " + esc(d.fiabilidad)}</small></span>
+      </summary>
+      ${detalleDia(d)}
+    </details>`;
+  }
+  html += `</div>`;
+
+  if(hoy) html += `<div class="bloque"><h3>Hoy, hora a hora</h3>${bandaHoras(hoy)}</div>`;
+
+  if(spot.seguridad?.length){
+    html += `<div class="bloque"><h3>Seguridad en ${esc(spot.nombre)}</h3><ul>` +
+      spot.seguridad.map(s => `<li class="${esc(s.severidad)}">${esc(s.aviso)}</li>`).join("") +
+      `</ul></div>`;
+  }
+
+  if(spot.calibracion && !spot.calibracion.completo){
+    html += `<div class="bloque pendiente"><h3>Spot sin calibrar del todo</h3>
+      <ul>` + spot.calibracion.faltan.map(f => `<li>${esc(f)}</li>`).join("") + `</ul>
+      <p style="font-size:12.5px;color:var(--tinta-3);margin:8px 0 0">
+      Mientras falten estos datos locales el veredicto no pasa de <b>Justo</b>:
+      preferimos quedarnos cortos antes que decirte que sí sin saberlo.</p></div>`;
+  }
+
+  if(spot.obsoleto){
+    html += `<div class="bloque pendiente"><h3>⚠ Datos sin actualizar</h3>
+      <p style="margin:0;font-size:13.5px;color:var(--tinta-2)">
+      No se ha podido refrescar la previsión de ${esc(spot.nombre)}. Lo que ves
+      es de <b>${esc(spot.obsoleto_desde || "una actualización anterior")}</b>.
+      No te fíes: contrasta antes de cargar el coche.</p></div>`;
+  }
+
+  if(spot.incidencias?.length){
+    html += `<div class="bloque pendiente"><h3>Incidencias de datos</h3><ul>` +
+      spot.incidencias.map(i => `<li>${esc(i)}</li>`).join("") + `</ul></div>`;
+  }
+
+  $("#app").innerHTML = html;
+}
+
+function detalleDia(d){
+  let h = `<div class="detalle">`;
+  if(d.viento || d.marea){
+    h += `<ul>`;
+    if(d.viento) h += `<li>Viento: ${esc(d.viento)}</li>`;
+    if(d.marea)  h += `<li>Marea: ${esc(d.marea)}</li>`;
+    for(const x of (d.detalle || [])) h += `<li>${esc(x)}</li>`;
+    h += `</ul>`;
+  }
+  h += bandaHoras(d) + `</div>`;
+  return h;
+}
+
+function bandaHoras(d){
+  const horas = (d.horas || []).filter(x => {
+    const hh = parseInt(x.hora, 10); return hh >= 7 && hh <= 21;
+  });
+  if(!horas.length) return "";
+  return `<div class="horas">` + horas.map(x => `
+    <div class="h" data-e="${esc(x.estado)}" title="${esc((x.motivos||[]).map(m=>m.razon).join(" · "))}">
+      <div class="hh">${esc(x.hora.slice(0,2))}h</div>
+      <div class="vv">${Math.round(x.viento)}</div>
+      <div class="rr">${esc(x.rumbo)}</div>
+    </div>`).join("") + `</div>`;
+}
+
+function pintarReloj(){
+  const gen = new Date(DATOS.generado);
+  const horas = (Date.now() - gen.getTime()) / 36e5;
+  const viejo = horas > 12;
+  $("#reloj").className = "reloj" + (viejo ? " viejo" : "");
+  $("#reloj").innerHTML = (viejo ? "⚠ Datos de hace " + Math.round(horas) + " h<br>" : "Actualizado<br>") +
+    esc(DATOS.generado_texto);
+}
+
+function pintarPie(){
+  const f = DATOS.fuentes.map(x => `<a href="${esc(x.url)}" rel="noopener">${esc(x.nombre)}</a>`).join(" · ");
+  $("#pie").innerHTML = `Datos: ${f}.<br>Mareas © Instituto Hidrográfico de la Marina.
+    Proyecto personal sin ánimo de lucro.`;
+}
+
+/* ---------------------------------------------------------------- arranque */
+fetch("data.json?v=" + Math.floor(Date.now() / 6e5))
+  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    DATOS = d;
+    const sel = $("#spot");
+    sel.innerHTML = d.spots.map(s => `<option value="${esc(s.id)}">${esc(s.nombre)}</option>`).join("");
+    const guardado = pref.get("spot", d.spots[0].id);
+    sel.value = d.spots.some(s => s.id === guardado) ? guardado : d.spots[0].id;
+    $("#peso").value = pref.get("peso", d.peso_base_kg);
+
+    sel.addEventListener("change", () => { pref.set("spot", sel.value); render(); });
+    $("#peso").addEventListener("input", () => { pref.set("peso", $("#peso").value); render(); });
+
+    pintarReloj();
+    pintarPie();
+    render();
+  })
+  .catch(e => {
+    $("#app").innerHTML = `<div class="error">No se ha podido cargar la previsión
+      (${esc(e.message)}). Vuelve a intentarlo en un rato: no te fíes de datos
+      que no están.</div>`;
+  });
+</script>
+</body>
+</html>
